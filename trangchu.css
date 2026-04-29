@@ -105,36 +105,61 @@ body {
 .main-nav {
     display: flex;
     justify-content: center;
-    gap: 40px;
-    padding: 15px 0;
+    align-items: center;
+    gap: 60px;
+    /* Tăng khoảng cách giữa 2 nút cho thoáng mắt */
+    padding: 20px 0;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 15px;
+    border-bottom: 1px solid #eaeaea;
+    /* Thêm đường viền mờ ngăn cách với banner */
 }
 
 .main-nav a {
     text-decoration: none;
-    color: #111;
-    padding: 8px 15px;
-    transition: color 0.3s;
-}
-
-.main-nav a:hover {
-    color: #666;
+    padding: 10px 25px;
+    /* Mở rộng vùng bấm */
+    transition: all 0.3s ease;
+    border-radius: 6px;
 }
 
 .main-nav .text-red {
     color: #d32f2f;
+    position: relative;
+    background: transparent;
 }
 
+.main-nav .text-red::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 5px;
+    left: 50%;
+    background-color: #d32f2f;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.main-nav .text-red:hover::after {
+    width: 50%;
+}
+
+/* Nút THỜI TRANG NAM: Thêm bóng đổ và hiệu ứng nổi bật khi hover */
 .main-nav .bg-black {
     background: #111;
     color: #fff;
-    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .main-nav .bg-black:hover {
-    background: #333;
+    background: #d32f2f;
+    /* Trỏ chuột vào sẽ đổi sang màu đỏ quyền lực */
     color: #fff;
+    transform: translateY(-2px);
+    /* Hiệu ứng nút nẩy lên nhẹ */
+    box-shadow: 0 6px 15px rgba(211, 47, 47, 0.3);
+    /* Bóng đổ màu đỏ */
 }
 
 /* SLIDER */

@@ -64,7 +64,6 @@ $result = $conn->query($sql);
         </div>
         <nav class="main-nav">
             <a href="#" class="text-red">SALE</a>
-            <a href="#">PHỤ KIỆN</a>
             <a href="#" class="bg-black">THỜI TRANG NAM &rarr;</a>
         </nav>
     </header>
