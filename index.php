@@ -1,4 +1,5 @@
 <?php
+session_start();
 // Kết nối cơ sở dữ liệu
 $host = 'localhost';
 $user = 'root';
@@ -58,8 +59,20 @@ $result = $conn->query($sql);
 
             <!-- Cột phải: Các nút chức năng -->
             <div class="header-right">
+            <?php if(isset($_SESSION['user_name'])): ?>
+                <!-- Nếu đã đăng nhập: Hiện tên và nút Thoát -->
+                <span style="font-weight: 600; font-size: 14px; margin-right: 15px; display: flex; align-items: center;">
+                    Chào, <?php echo $_SESSION['user_name']; ?> 
+                    <a href="logout.php" style="color: #d32f2f; text-decoration: none; margin-left: 10px; font-size: 13px;">(Thoát)</a>
+                </span>
+            <?php else: ?>
+                <!-- Nếu chưa đăng nhập: Hiện nút -->
                 <button id="loginBtn" class="btn-outline">Đăng nhập / Đăng ký</button>
-                <button class="btn-outline">Giỏ hàng (0)</button>
+            <?php endif; ?>
+                
+            <!-- Đếm số sản phẩm trong giỏ -->
+            <?php $cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0; ?>
+            <a href="giohang.php" class="btn-outline" style="text-decoration: none; display: inline-block;">Giỏ hàng (<?php echo $cart_count; ?>)</a>
             </div>
         </div>
         <nav class="main-nav">
@@ -103,7 +116,12 @@ $result = $conn->query($sql);
                             <h3>'.$row["name"].'</h3>
                             <p>'.$formatted_price.'</p>
                         </div>
-                        <button class="add-to-cart">THÊM VÀO GIỎ</button>
+                        <!-- Form gửi ID sản phẩm sang trang giỏ hàng -->
+                        <form action="giohang.php" method="POST" style="margin:0;">
+                            <input type="hidden" name="action" value="add">
+                            <input type="hidden" name="product_id" value="'.$row["id"].'">
+                            <button type="submit" class="add-to-cart">THÊM VÀO GIỎ</button>
+                        </form>
                     </div>';
                 }
             } else {
@@ -140,23 +158,28 @@ $result = $conn->query($sql);
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>ĐĂNG NHẬP</h2>
-            <form action="login.php" method="POST">
-                <div class="input-group">
-                    <label>Email</label>
-                    <input type="email" placeholder="Nhập email..." required>
-                </div>
-                <div class="input-group">
-                    <label>Mật khẩu</label>
-                    <input type="password" placeholder="Nhập mật khẩu..." required>
-                </div>
-                <button type="submit" class="btn-login-submit">ĐĂNG NHẬP</button>
-                <p class="register-link">Chưa có tài khoản? <a href="#">Đăng ký ngay</a></p>
-            </form>
+            
+            <!-- FORM ĐĂNG NHẬP -->
+            <div id="loginForm">
+                <h2>ĐĂNG NHẬP</h2>
+                <form action="auth.php" method="POST">
+                    <input type="hidden" name="action" value="login">
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" name="email" placeholder="Nhập email..." required>
+                    </div>
+                    <div class="input-group">
+                        <label>Mật khẩu</label>
+                        <input type="password" name="password" placeholder="Nhập mật khẩu..." required>
+                    </div>
+                    <button type="submit" class="btn-login-submit">ĐĂNG NHẬP</button>
+                    <p class="register-link">Chưa có tài khoản? <a href="dangky.php">Đăng ký ngay</a></p>
+                </form>
+            </div>
         </div>
     </div>
 
     <script src="trangchu.js"></script>
 </body>
 </html>
-<?php $conn->close(); ?>
+<?php $conn->close(); ?>    

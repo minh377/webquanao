@@ -1,0 +1,103 @@
+/* GIAO DIỆN PHẦN THÂN TRANG ĐĂNG KÝ */
+.register-page {
+    padding: 60px 5%;
+    background-color: #f7f7f7;
+    /* Nền xám nhạt để làm nổi bật form trắng */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.register-container {
+    background: #fff;
+    padding: 50px;
+    width: 100%;
+    max-width: 550px;
+    /* Độ rộng vừa phải cho form */
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.register-container h2 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.register-container p {
+    text-align: center;
+    color: #666;
+    margin-bottom: 35px;
+    font-size: 15px;
+}
+
+/* KHUNG NHẬP LIỆU */
+.register-container .input-group {
+    margin-bottom: 20px;
+}
+
+.register-container .input-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #333;
+}
+
+.register-container .input-group input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+    transition: border 0.3s;
+    font-size: 15px;
+}
+
+.register-container .input-group input:focus {
+    border-color: #111;
+}
+
+/* NÚT SUBMIT */
+.btn-submit-register {
+    width: 100%;
+    background: #111;
+    color: #fff;
+    padding: 16px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.btn-submit-register:hover {
+    background: #d32f2f;
+    /* Hiệu ứng đỏ quyền lực giống nút banner */
+    box-shadow: 0 6px 15px rgba(211, 47, 47, 0.3);
+    transform: translateY(-2px);
+}
+
+/* LINK CHUYỂN HƯỚNG */
+.login-redirect {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 14px;
+    color: #555;
+}
+
+.login-redirect a {
+    color: #111;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.login-redirect a:hover {
+    color: #d32f2f;
+}
