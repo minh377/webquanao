@@ -76,7 +76,7 @@ $result = $conn->query($sql);
             </div>
         </div>
         <nav class="main-nav">
-            <a href="#" class="text-red">SALE</a>
+            <a href="sale.php" class="text-red">SALE</a>
             <a href="#" class="bg-black">THỜI TRANG NAM &rarr;</a>
         </nav>
     </header>
@@ -141,7 +141,7 @@ $result = $conn->query($sql);
             <div class="footer-col">
                 <h3>Liên hệ</h3>
                 <p>Hotline: 0886 871 298</p>
-                <p>Email: minhdca1v7n523@vlvh.ctu.edu.vn</p>
+                <p>Email: minhdc21v7n523@vlvh.ctu.edu.vn</p>
             </div>
             <div class="footer-col">
                 <h3>Địa chỉ cửa hàng</h3>

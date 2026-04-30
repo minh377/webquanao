@@ -1,59 +1,45 @@
 <?php
 session_start();
+$conn = new mysqli('localhost', 'root', '', 'shoptheman_db');
 
-// Kết nối Database
-$host = 'localhost';
-$user = 'root';
-$pass = '';
-$db = 'shoptheman_db'; 
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) die("Kết nối thất bại: " . $conn->connect_error);
+if(!isset($_SESSION['cart'])) { $_SESSION['cart'] = []; }
 
-// Khởi tạo giỏ hàng nếu chưa có
-if(!isset($_SESSION['cart'])) {
-    $_SESSION['cart'] = [];
-}
-
-// 1. XỬ LÝ THÊM SẢN PHẨM VÀO GIỎ
+// 1. XỬ LÝ THÊM SẢN PHẨM (CÓ KÈM SIZE)
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'add') {
     $product_id = $_POST['product_id'];
+    // Lấy size người dùng chọn (nếu thêm từ trang chủ không có size thì gán mặc định)
+    $size = isset($_POST['size']) ? $_POST['size'] : 'Mặc định';
     
-    // Nếu sản phẩm đã có trong giỏ thì tăng số lượng, chưa có thì set = 1
-    if(isset($_SESSION['cart'][$product_id])) {
-        $_SESSION['cart'][$product_id]++;
+    // Tạo khóa duy nhất: Ví dụ "1-XL"
+    $cart_key = $product_id . '-' . $size;
+    
+    if(isset($_SESSION['cart'][$cart_key])) {
+        $_SESSION['cart'][$cart_key]++;
     } else {
-        $_SESSION['cart'][$product_id] = 1;
+        $_SESSION['cart'][$cart_key] = 1;
     }
-    // Chuyển hướng lại chính trang giỏ hàng để tránh lỗi gửi lại form khi F5
     header("Location: giohang.php"); 
     exit();
 }
 
-// 2. XỬ LÝ XÓA SẢN PHẨM KHỎI GIỎ
+// 2. XỬ LÝ XÓA SẢN PHẨM
 if(isset($_GET['remove'])) {
-    $remove_id = $_GET['remove'];
-    unset($_SESSION['cart'][$remove_id]);
-    header("Location: giohang.php");
-    exit();
+    $remove_key = $_GET['remove'];
+    unset($_SESSION['cart'][$remove_key]);
+    header("Location: giohang.php"); exit();
 }
 
 // 3. XỬ LÝ TĂNG/GIẢM SỐ LƯỢNG
-if(isset($_GET['action']) && isset($_GET['id'])) {
-    $id = $_GET['id'];
-    $action = $_GET['action'];
-
-    if(isset($_SESSION['cart'][$id])) {
-        if($action == 'increase') {
-            $_SESSION['cart'][$id]++; // Cộng thêm 1
-        } elseif($action == 'decrease') {
-            $_SESSION['cart'][$id]--; // Trừ đi 1
-            if($_SESSION['cart'][$id] <= 0) {
-                unset($_SESSION['cart'][$id]); // Nếu trừ về 0 thì tự động xóa khỏi giỏ
-            }
+if(isset($_GET['action']) && isset($_GET['key'])) {
+    $key = $_GET['key'];
+    if(isset($_SESSION['cart'][$key])) {
+        if($_GET['action'] == 'increase') $_SESSION['cart'][$key]++;
+        if($_GET['action'] == 'decrease') {
+            $_SESSION['cart'][$key]--;
+            if($_SESSION['cart'][$key] <= 0) unset($_SESSION['cart'][$key]);
         }
     }
-    header("Location: giohang.php");
-    exit();
+    header("Location: giohang.php"); exit();
 }
 ?>
 
@@ -110,40 +96,61 @@ if(isset($_GET['action']) && isset($_GET['id'])) {
                     <tbody>
                         <?php
                         $total_price = 0;
-                        // Lấy danh sách ID sản phẩm từ session
-                        $ids = implode(',', array_keys($_SESSION['cart']));
-                        
-                        // Đảm bảo có ID thì mới truy vấn database
-                        if(!empty($ids)) {
-                            $sql = "SELECT * FROM products WHERE id IN ($ids)";
-                            $result = $conn->query($sql);
+                        // Lọc ra các ID sản phẩm không trùng lặp từ giỏ hàng
+                        $product_ids = [];
+                        foreach($_SESSION['cart'] as $key => $qty) {
+                            $parts = explode('-', $key);
+                            $product_ids[] = $parts[0];
+                        }
+                        $ids_string = implode(',', array_unique($product_ids));
 
+                        if(!empty($ids_string)) {
+                            // Lấy thông tin sản phẩm từ database
+                            $result = $conn->query("SELECT * FROM products WHERE id IN ($ids_string)");
+                            $products_data = [];
                             while($row = $result->fetch_assoc()) {
-                                $qty = $_SESSION['cart'][$row['id']];
-                                $subtotal = $row['price'] * $qty;
-                                $total_price += $subtotal;
+                                $products_data[$row['id']] = $row;
+                            }
+
+                            // Bắt đầu in từng dòng sản phẩm
+                            foreach($_SESSION['cart'] as $key => $qty) {
+                                $parts = explode('-', $key);
+                                $p_id = $parts[0];
                                 
-                                echo '
+                                // === ĐOẠN CODE ĐÃ ĐƯỢC SỬA LỖI ===
+                                // Kiểm tra xem có size (key 1) không, nếu không có thì gán 'Mặc định'
+                                $p_size = isset($parts[1]) ? $parts[1] : 'Mặc định'; 
                                 
-                                <tr>
-                                    <td class="product-col">
-                                        <img src="'.$row['image_url'].'" alt="">
-                                        <span>'.$row['name'].'</span>
-                                    </td>
-                                    <td>'.number_format($row['price'], 0, ',', '.').'đ</td>
+                                // Kiểm tra xem sản phẩm có thực sự tồn tại trong database không
+                                if(isset($products_data[$p_id])) {
+                                    $row = $products_data[$p_id];
                                     
-                                    <!-- Thay thế cột số lượng cũ bằng đoạn mới này -->
-                                    <td class="center-col">
-                                        <div class="qty-control">
-                                            <a href="giohang.php?action=decrease&id='.$row['id'].'" class="qty-btn">-</a>
-                                            <span class="qty-num">'.$qty.'</span>
-                                            <a href="giohang.php?action=increase&id='.$row['id'].'" class="qty-btn">+</a>
-                                        </div>
-                                    </td>
+                                    // Nếu có giá Sale thì lấy giá Sale để tính tiền
+                                    $current_price = ($row['sale_price'] > 0) ? $row['sale_price'] : $row['price'];
+                                    $subtotal = $current_price * $qty;
+                                    $total_price += $subtotal;
                                     
-                                    <td style="font-weight: bold;">'.number_format($subtotal, 0, ',', '.').'đ</td>
-                                    <td><a href="giohang.php?remove='.$row['id'].'" class="remove-btn">Xóa</a></td>
-                                </tr>';
+                                    echo '
+                                    <tr>
+                                        <td class="product-col">
+                                            <img src="'.$row['image_url'].'" alt="">
+                                            <div>
+                                                <span style="display:block;">'.$row['name'].'</span>
+                                                <small style="color:#d32f2f;">Size: '.$p_size.'</small>
+                                            </div>
+                                        </td>
+                                        <td>'.number_format($current_price, 0, ',', '.').'đ</td>
+                                        <td class="center-col">
+                                            <div class="qty-control">
+                                                <a href="giohang.php?action=decrease&key='.$key.'" class="qty-btn">-</a>
+                                                <span class="qty-num">'.$qty.'</span>
+                                                <a href="giohang.php?action=increase&key='.$key.'" class="qty-btn">+</a>
+                                            </div>
+                                        </td>
+                                        <td style="font-weight: bold;">'.number_format($subtotal, 0, ',', '.').'đ</td>
+                                        <td><a href="giohang.php?remove='.$key.'" class="remove-btn">Xóa</a></td>
+                                    </tr>';
+                                }
                             }
                         }
                         ?>
@@ -152,7 +159,7 @@ if(isset($_GET['action']) && isset($_GET['id'])) {
 
                 <div class="cart-summary">
                     <h3>Tổng đơn hàng: <span><?php echo number_format($total_price, 0, ',', '.'); ?>đ</span></h3>
-                    <button class="btn-checkout">TIẾN HÀNH THANH TOÁN</button>
+                    <a href="thanhtoan.php" class="btn-checkout" style="display: inline-block; text-decoration: none; text-align: center;">TIẾN HÀNH THANH TOÁN</a>
                 </div>
             </div>
         <?php endif; ?>

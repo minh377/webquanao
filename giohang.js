@@ -20,9 +20,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', function () {
-            alert("Tính năng thanh toán đang được phát triển! Cảm ơn bạn đã ủng hộ ShopTheMan.");
-            // Sau này bạn làm trang thanh toán thì có thể thay bằng dòng lệnh: 
-            // window.location.href = "thanhtoan.php";
+
+            window.location.href = "thanhtoan.php";
         });
     }
 });
