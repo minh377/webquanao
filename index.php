@@ -77,7 +77,7 @@ $result = $conn->query($sql);
         </div>
         <nav class="main-nav">
             <a href="sale.php" class="text-red">SALE</a>
-            <a href="#" class="bg-black">THỜI TRANG NAM &rarr;</a>
+            <a href="thoitrangnam.php" class="bg-black">THỜI TRANG NAM &rarr;</a>
         </nav>
     </header>
 
@@ -116,12 +116,8 @@ $result = $conn->query($sql);
                             <h3>'.$row["name"].'</h3>
                             <p>'.$formatted_price.'</p>
                         </div>
-                        <!-- Form gửi ID sản phẩm sang trang giỏ hàng -->
-                        <form action="giohang.php" method="POST" style="margin:0;">
-                            <input type="hidden" name="action" value="add">
-                            <input type="hidden" name="product_id" value="'.$row["id"].'">
-                            <button type="submit" class="add-to-cart">THÊM VÀO GIỎ</button>
-                        </form>
+                        <!-- Nút Xem chi tiết gọn nhẹ, thay thế hoàn toàn Form giỏ hàng nặng nề cũ -->
+                        <a href="thoitrangnam.php" class="add-to-cart" style="text-align: center; text-decoration: none; display: block; box-sizing: border-box;">XEM CHI TIẾT</a>
                     </div>';
                 }
             } else {
