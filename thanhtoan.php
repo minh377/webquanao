@@ -14,19 +14,53 @@ if(empty($_SESSION['cart'])) {
 
 // 1. TÍNH TỔNG TIỀN VÀ LẤY THÔNG TIN SẢN PHẨM TRONG GIỎ
 $total_price = 0;
-$ids = implode(',', array_keys($_SESSION['cart']));
 $cart_products = [];
 
-if(!empty($ids)) {
-    $sql = "SELECT id, name, price, image_url FROM products WHERE id IN ($ids)";
-    $result = $conn->query($sql);
-    while($row = $result->fetch_assoc()) {
-        $qty = $_SESSION['cart'][$row['id']];
-        $total_price += $row['price'] * $qty;
-        $row['quantity'] = $qty; // Lưu số lượng vào mảng để dùng sau
-        $cart_products[] = $row;
+// Tách lấy các ID sản phẩm (loại bỏ phần chữ Size để SQL không bị lỗi)
+$product_ids = [];
+if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+    foreach($_SESSION['cart'] as $key => $qty) {
+        $parts = explode('-', $key);
+        $product_ids[] = $parts[0]; 
     }
 }
+$ids_string = implode(',', array_unique($product_ids));
+
+if(!empty($ids_string)) {
+    // Thêm sale_price vào để tính đúng tiền hàng giảm giá
+    $sql = "SELECT id, name, price, sale_price, image_url FROM products WHERE id IN ($ids_string)";
+    $result = $conn->query($sql);
+    
+    $products_data = [];
+    while($row = $result->fetch_assoc()) {
+        $products_data[$row['id']] = $row;
+    }
+
+    // Lắp ráp lại giỏ hàng chi tiết để in ra hóa đơn
+    foreach($_SESSION['cart'] as $key => $qty) {
+        $parts = explode('-', $key);
+        $p_id = $parts[0];
+        $p_size = isset($parts[1]) ? $parts[1] : 'Mặc định';
+
+        if(isset($products_data[$p_id])) {
+            $row = $products_data[$p_id];
+            
+            // Nếu có giá Sale thì lấy giá Sale, không thì lấy giá gốc
+            $current_price = ($row['sale_price'] > 0) ? $row['sale_price'] : $row['price'];
+            $total_price += $current_price * $qty;
+            
+            // Đưa vào mảng để hiển thị và lưu xuống database
+            $cart_products[] = [
+                'id' => $p_id,
+                'name' => $row['name'] . ' (Size: ' . $p_size . ')', // Ghép size vào tên áo cho rõ ràng
+                'price' => $current_price,
+                'quantity' => $qty,
+                'image_url' => $row['image_url']
+            ];
+        }
+    }
+}
+
 
 // 2. XỬ LÝ LƯU VÀO DATABASE KHI BẤM "ĐẶT HÀNG"
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['place_order'])) {
